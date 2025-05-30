@@ -13,7 +13,7 @@ class SavedPhoto {
     var identifier: String
     var addedDate: Date
     var order: Int
-    
+
     init(identifier: String, addedDate: Date = Date(), order: Int = 0) {
         self.identifier = identifier
         self.addedDate = addedDate

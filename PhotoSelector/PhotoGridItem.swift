@@ -14,7 +14,7 @@ struct PhotoGridItem: View {
     let isAlreadyAdded: Bool
     let onTap: () -> Void
     @State private var image: UIImage?
-    
+
     var body: some View {
         ZStack {
             if let image = image {
@@ -28,14 +28,14 @@ struct PhotoGridItem: View {
                     .fill(Color.gray.opacity(0.3))
                     .frame(width: UIScreen.main.bounds.width / 3 - 4, height: UIScreen.main.bounds.width / 3 - 4)
             }
-            
+
             // 現在選択中のオーバーレイ
             if selectionIndex != nil {
                 Rectangle()
                     .fill(Color.blue.opacity(0.4))
                     .frame(width: UIScreen.main.bounds.width / 3 - 4, height: UIScreen.main.bounds.width / 3 - 4)
             }
-            
+
             // マークを表示
             VStack {
                 HStack {
@@ -47,12 +47,12 @@ struct PhotoGridItem: View {
                             .font(.title3)
                             .padding(8)
                     }
-                    
+
                     Spacer()
                 }
-                
+
                 Spacer()
-                
+
                 // 選択順番号（右下）
                 if let selectionIndex = selectionIndex {
                     HStack {
@@ -75,17 +75,17 @@ struct PhotoGridItem: View {
             loadThumbnail()
         }
     }
-    
+
     private func loadThumbnail() {
         let options = PHImageRequestOptions()
         options.deliveryMode = .opportunistic
         options.isSynchronous = false
-        
+
         let targetSize = CGSize(
             width: UIScreen.main.bounds.width / 3 * UIScreen.main.scale,
             height: UIScreen.main.bounds.width / 3 * UIScreen.main.scale
         )
-        
+
         PHImageManager.default().requestImage(
             for: asset,
             targetSize: targetSize,
@@ -98,12 +98,3 @@ struct PhotoGridItem: View {
         }
     }
 }
-
-#Preview {
-    PhotoGridItem(
-        asset: PHAsset(),
-        selectionIndex: nil,
-        isAlreadyAdded: true,
-        onTap: {}
-    )
-} 

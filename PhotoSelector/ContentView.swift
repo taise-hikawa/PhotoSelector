@@ -14,21 +14,17 @@ struct ContentView: View {
     @Query(sort: \SavedPhoto.order) private var savedPhotos: [SavedPhoto]
     @State private var selectedImages: [PHAsset] = []
     @State private var showingPhotoPicker = false
-    
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 // 選択された画像のリスト
                 if selectedImages.isEmpty {
-                    VStack {
-                        Image(systemName: "photo.on.rectangle")
-                            .font(.system(size: 50))
-                            .foregroundColor(.gray)
-                        Text("追加された画像がありません")
-                            .font(.headline)
-                            .foregroundColor(.gray)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    ContentUnavailableView(
+                        "画像が追加されていません",
+                        systemImage: "photo.on.rectangle",
+                        description: Text("下のボタンから写真を選択して追加しましょう")
+                    )
                 } else {
                     List {
                         ForEach(Array(selectedImages.enumerated()), id: \.element.localIdentifier) { index, asset in
@@ -39,7 +35,6 @@ struct ContentView: View {
                         .onMove(perform: moveImages)
                     }
                 }
-                
                 // 写真選択ボタン
                 Button("写真を選択") {
                     showingPhotoPicker = true
@@ -71,10 +66,10 @@ struct ContentView: View {
             loadSavedImages()
         }
     }
-    
+
     private func addImages(_ newImages: [PHAsset]) {
         let currentMaxOrder = savedPhotos.map(\.order).max() ?? -1
-        
+
         for (index, asset) in newImages.enumerated() {
             // 重複チェックを削除して、同じ画像でも追加可能にする
             let savedPhoto = SavedPhoto(
@@ -84,52 +79,52 @@ struct ContentView: View {
             )
             modelContext.insert(savedPhoto)
         }
-        
+
         try? modelContext.save()
     }
-    
+
     private func deleteImages(offsets: IndexSet) {
         let assetsToDelete = offsets.map { selectedImages[$0] }
-        
+
         for asset in assetsToDelete {
             if let savedPhoto = savedPhotos.first(where: { $0.identifier == asset.localIdentifier }) {
                 modelContext.delete(savedPhoto)
             }
         }
-        
+
         try? modelContext.save()
     }
-    
+
     private func moveImages(from source: IndexSet, to destination: Int) {
         var newSelectedImages = selectedImages
         newSelectedImages.move(fromOffsets: source, toOffset: destination)
-        
+
         // 新しい順序でorderを更新
         for (index, asset) in newSelectedImages.enumerated() {
             if let savedPhoto = savedPhotos.first(where: { $0.identifier == asset.localIdentifier }) {
                 savedPhoto.order = index
             }
         }
-        
+
         try? modelContext.save()
     }
-    
+
     private func loadSavedImages() {
         let identifiers = savedPhotos.map { $0.identifier }
-        
+
         guard !identifiers.isEmpty else {
             selectedImages = []
             return
         }
-        
+
         let fetchOptions = PHFetchOptions()
         let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: identifiers, options: fetchOptions)
-        
+
         var loadedAssets: [PHAsset] = []
         fetchResult.enumerateObjects { asset, _, _ in
             loadedAssets.append(asset)
         }
-        
+
         // 保存された順序を維持
         selectedImages = savedPhotos.compactMap { savedPhoto in
             loadedAssets.first { $0.localIdentifier == savedPhoto.identifier }

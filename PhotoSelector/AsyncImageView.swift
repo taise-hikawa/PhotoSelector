@@ -11,7 +11,7 @@ import Photos
 struct AsyncImageView: View {
     let asset: PHAsset
     @State private var image: UIImage?
-    
+
     var body: some View {
         HStack {
             if let image = image {
@@ -27,7 +27,7 @@ struct AsyncImageView: View {
                     .frame(width: 80, height: 80)
                     .cornerRadius(8)
             }
-            
+
             VStack(alignment: .leading) {
                 Text("追加日時: \(asset.creationDate?.formatted() ?? "不明")")
                     .font(.caption)
@@ -35,19 +35,19 @@ struct AsyncImageView: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
-            
+
             Spacer()
         }
         .onAppear {
             loadImage()
         }
     }
-    
+
     private func loadImage() {
         let options = PHImageRequestOptions()
         options.deliveryMode = .highQualityFormat
         options.isSynchronous = false
-        
+
         PHImageManager.default().requestImage(
             for: asset,
             targetSize: CGSize(width: 80, height: 80),

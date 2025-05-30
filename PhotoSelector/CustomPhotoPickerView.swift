@@ -11,14 +11,14 @@ import Photos
 struct CustomPhotoPickerView: View {
     let addedImages: [PHAsset]
     let onImagesSelected: ([PHAsset]) -> Void
-    
+
     @Environment(\.dismiss) private var dismiss
     @State private var allAssets: [PHAsset] = []
     @State private var currentlySelectedImages: [PHAsset] = []
     @State private var hasPermission = false
-    
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Group {
                 if hasPermission {
                     VStack {
@@ -32,7 +32,7 @@ struct CustomPhotoPickerView: View {
                             }
                             .padding(.horizontal)
                         }
-                        
+
                         ScrollView {
                             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 2) {
                                 ForEach(allAssets, id: \.localIdentifier) { asset in
@@ -49,12 +49,11 @@ struct CustomPhotoPickerView: View {
                         }
                     }
                 } else {
-                    VStack {
-                        Image(systemName: "photo.fill")
-                            .font(.system(size: 50))
-                            .foregroundColor(.gray)
-                        Text("写真へのアクセス許可が必要です")
-                            .font(.headline)
+                    ContentUnavailableView {
+                        Label("写真へのアクセスが必要です", systemImage: "photo.fill")
+                    } description: {
+                        Text("写真を選択するには写真ライブラリへのアクセス許可が必要です")
+                    } actions: {
                         Button("設定を開く") {
                             openSettings()
                         }
@@ -83,7 +82,7 @@ struct CustomPhotoPickerView: View {
             requestPhotoPermission()
         }
     }
-    
+
     private func toggleCurrentSelection(asset: PHAsset) {
         if let index = currentlySelectedImages.firstIndex(where: { $0.localIdentifier == asset.localIdentifier }) {
             currentlySelectedImages.remove(at: index)
@@ -91,10 +90,10 @@ struct CustomPhotoPickerView: View {
             currentlySelectedImages.append(asset)
         }
     }
-    
+
     private func requestPhotoPermission() {
         let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-        
+
         switch status {
         case .authorized, .limited:
             hasPermission = true
@@ -114,24 +113,24 @@ struct CustomPhotoPickerView: View {
             hasPermission = false
         }
     }
-    
+
     private func loadPhotos() {
         let fetchOptions = PHFetchOptions()
         fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
         fetchOptions.predicate = NSPredicate(format: "mediaType == %d", PHAssetMediaType.image.rawValue)
-        
+
         let results = PHAsset.fetchAssets(with: fetchOptions)
         var assets: [PHAsset] = []
-        
+
         results.enumerateObjects { asset, _, _ in
             assets.append(asset)
         }
-        
+
         DispatchQueue.main.async {
             self.allAssets = assets
         }
     }
-    
+
     private func openSettings() {
         if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(settingsUrl)
