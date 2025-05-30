@@ -10,7 +10,8 @@ import Photos
 
 struct PhotoGridItem: View {
     let asset: PHAsset
-    let isSelected: Bool
+    let isCurrentlySelected: Bool
+    let isAlreadyAdded: Bool
     let onTap: () -> Void
     @State private var image: UIImage?
     
@@ -28,23 +29,37 @@ struct PhotoGridItem: View {
                     .frame(width: UIScreen.main.bounds.width / 3 - 4, height: UIScreen.main.bounds.width / 3 - 4)
             }
             
-            // チェックマークオーバーレイ
-            if isSelected {
+            // 現在選択中のオーバーレイ
+            if isCurrentlySelected {
                 Rectangle()
-                    .fill(Color.blue.opacity(0.3))
+                    .fill(Color.blue.opacity(0.4))
                     .frame(width: UIScreen.main.bounds.width / 3 - 4, height: UIScreen.main.bounds.width / 3 - 4)
-                
-                VStack {
-                    HStack {
-                        Spacer()
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.white)
-                            .background(Color.blue, in: Circle())
-                            .font(.title2)
-                            .padding(8)
-                    }
+            }
+            
+            // マークを表示
+            VStack {
+                HStack {
                     Spacer()
+                    VStack(spacing: 4) {
+                        // 現在選択中のチェックマーク
+                        if isCurrentlySelected {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.white)
+                                .background(Color.blue, in: Circle())
+                                .font(.title2)
+                        }
+                        
+                        // 追加済みマーク
+                        if isAlreadyAdded {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundColor(.white)
+                                .background(Color.green, in: Circle())
+                                .font(.title3)
+                        }
+                    }
+                    .padding(8)
                 }
+                Spacer()
             }
         }
         .onTapGesture {
@@ -81,7 +96,8 @@ struct PhotoGridItem: View {
 #Preview {
     PhotoGridItem(
         asset: PHAsset(),
-        isSelected: false,
+        isCurrentlySelected: false,
+        isAlreadyAdded: true,
         onTap: {}
     )
 } 

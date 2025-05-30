@@ -9,26 +9,45 @@ import SwiftUI
 import Photos
 
 struct CustomPhotoPickerView: View {
-    @Binding var selectedImages: [PHAsset]
+    let addedImages: [PHAsset]
+    let onImagesSelected: ([PHAsset]) -> Void
+    
     @Environment(\.dismiss) private var dismiss
     @State private var allAssets: [PHAsset] = []
+    @State private var currentlySelectedImages: [PHAsset] = []
     @State private var hasPermission = false
     
     var body: some View {
         NavigationView {
             Group {
                 if hasPermission {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 2) {
-                        ForEach(allAssets, id: \.localIdentifier) { asset in
-                            PhotoGridItem(
-                                asset: asset,
-                                isSelected: selectedImages.contains { $0.localIdentifier == asset.localIdentifier }
-                            ) {
-                                toggleSelection(asset: asset)
+                    VStack {
+                        // 選択中の画像数表示
+                        if !currentlySelectedImages.isEmpty {
+                            HStack {
+                                Text("\(currentlySelectedImages.count)枚選択中")
+                                    .font(.caption)
+                                    .foregroundColor(.blue)
+                                Spacer()
                             }
+                            .padding(.horizontal)
+                        }
+                        
+                        ScrollView {
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 2) {
+                                ForEach(allAssets, id: \.localIdentifier) { asset in
+                                    PhotoGridItem(
+                                        asset: asset,
+                                        isCurrentlySelected: currentlySelectedImages.contains { $0.localIdentifier == asset.localIdentifier },
+                                        isAlreadyAdded: addedImages.contains { $0.localIdentifier == asset.localIdentifier }
+                                    ) {
+                                        toggleCurrentSelection(asset: asset)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 2)
                         }
                     }
-                    .padding(.horizontal, 2)
                 } else {
                     VStack {
                         Image(systemName: "photo.fill")
@@ -52,9 +71,11 @@ struct CustomPhotoPickerView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("完了") {
+                    Button("追加") {
+                        onImagesSelected(currentlySelectedImages)
                         dismiss()
                     }
+                    .disabled(currentlySelectedImages.isEmpty)
                 }
             }
         }
@@ -63,11 +84,11 @@ struct CustomPhotoPickerView: View {
         }
     }
     
-    private func toggleSelection(asset: PHAsset) {
-        if let index = selectedImages.firstIndex(where: { $0.localIdentifier == asset.localIdentifier }) {
-            selectedImages.remove(at: index)
+    private func toggleCurrentSelection(asset: PHAsset) {
+        if let index = currentlySelectedImages.firstIndex(where: { $0.localIdentifier == asset.localIdentifier }) {
+            currentlySelectedImages.remove(at: index)
         } else {
-            selectedImages.append(asset)
+            currentlySelectedImages.append(asset)
         }
     }
     
@@ -119,5 +140,8 @@ struct CustomPhotoPickerView: View {
 }
 
 #Preview {
-    CustomPhotoPickerView(selectedImages: .constant([]))
+    CustomPhotoPickerView(
+        addedImages: [],
+        onImagesSelected: { _ in }
+    )
 } 
