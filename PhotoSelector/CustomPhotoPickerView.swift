@@ -38,7 +38,7 @@ struct CustomPhotoPickerView: View {
                                 ForEach(allAssets, id: \.localIdentifier) { asset in
                                     PhotoGridItem(
                                         asset: asset,
-                                        isCurrentlySelected: currentlySelectedImages.contains { $0.localIdentifier == asset.localIdentifier },
+                                        selectionIndex: currentlySelectedImages.firstIndex(where: { $0.localIdentifier == asset.localIdentifier }),
                                         isAlreadyAdded: addedImages.contains { $0.localIdentifier == asset.localIdentifier }
                                     ) {
                                         toggleCurrentSelection(asset: asset)

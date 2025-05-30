@@ -10,7 +10,7 @@ import Photos
 
 struct PhotoGridItem: View {
     let asset: PHAsset
-    let isCurrentlySelected: Bool
+    let selectionIndex: Int?
     let isAlreadyAdded: Bool
     let onTap: () -> Void
     @State private var image: UIImage?
@@ -30,7 +30,7 @@ struct PhotoGridItem: View {
             }
             
             // 現在選択中のオーバーレイ
-            if isCurrentlySelected {
+            if selectionIndex != nil {
                 Rectangle()
                     .fill(Color.blue.opacity(0.4))
                     .frame(width: UIScreen.main.bounds.width / 3 - 4, height: UIScreen.main.bounds.width / 3 - 4)
@@ -39,27 +39,33 @@ struct PhotoGridItem: View {
             // マークを表示
             VStack {
                 HStack {
-                    Spacer()
-                    VStack(spacing: 4) {
-                        // 現在選択中のチェックマーク
-                        if isCurrentlySelected {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.white)
-                                .background(Color.blue, in: Circle())
-                                .font(.title2)
-                        }
-                        
-                        // 追加済みマーク
-                        if isAlreadyAdded {
-                            Image(systemName: "plus.circle.fill")
-                                .foregroundColor(.white)
-                                .background(Color.green, in: Circle())
-                                .font(.title3)
-                        }
+                    // 追加済みマーク（左上）
+                    if isAlreadyAdded {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.black)
+                            .background(Color.white, in: Circle())
+                            .font(.title3)
+                            .padding(8)
                     }
-                    .padding(8)
+                    
+                    Spacer()
                 }
+                
                 Spacer()
+                
+                // 選択順番号（右下）
+                if let selectionIndex = selectionIndex {
+                    HStack {
+                        Spacer()
+                        Text("\(selectionIndex + 1)")
+                            .font(.headline)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .frame(width: 24, height: 24)
+                            .background(Color.blue, in: Circle())
+                            .padding(8)
+                    }
+                }
             }
         }
         .onTapGesture {
@@ -96,7 +102,7 @@ struct PhotoGridItem: View {
 #Preview {
     PhotoGridItem(
         asset: PHAsset(),
-        isCurrentlySelected: false,
+        selectionIndex: nil,
         isAlreadyAdded: true,
         onTap: {}
     )
